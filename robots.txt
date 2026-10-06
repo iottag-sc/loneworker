@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://loneworker.iottag.com/sitemap.xml
