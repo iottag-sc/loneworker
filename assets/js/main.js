@@ -1,9 +1,12 @@
 (()=>{'use strict';
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
  const video=document.getElementById('worker-video'),cover=document.getElementById('video-cover');
- function playVideo(){document.getElementById('video').scrollIntoView({behavior:reduced.matches?'auto':'smooth',block:'center'});cover.hidden=true;video.focus();const promise=video.play();if(promise&&promise.catch)promise.catch(()=>{video.controls=true;});}
+ let autoMuted=false;
+ function playVideo(){document.getElementById('video').scrollIntoView({behavior:reduced.matches?'auto':'smooth',block:'center'});cover.hidden=true;if(autoMuted){autoMuted=false;video.muted=false;video.currentTime=0;}video.focus();const promise=video.play();if(promise&&promise.catch)promise.catch(()=>{video.controls=true;});}
  document.getElementById('watch-video').addEventListener('click',playVideo);cover.addEventListener('click',playVideo);
- video.addEventListener('play',()=>{cover.hidden=true;});video.addEventListener('ended',()=>{cover.hidden=false;});
+ video.addEventListener('play',()=>{cover.hidden=true;});video.addEventListener('ended',()=>{cover.hidden=false;});video.addEventListener('volumechange',()=>{if(!video.muted)autoMuted=false;});
+ // Browsers only allow autoplay without sound; skip it for reduced-motion users.
+ if(!reduced.matches){autoMuted=true;video.muted=true;const auto=video.play();if(auto&&auto.catch)auto.catch(()=>{autoMuted=false;video.muted=false;});}
  const root=document.getElementById('system-tour'),tabs=[...root.querySelectorAll('[role=tab]')],panels=[...root.querySelectorAll('[role=tabpanel]')];
  let current=0,timer=null;
  function select(index,focus=false){current=(index+tabs.length)%tabs.length;tabs.forEach((tab,i)=>{const on=i===current;tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1;panels[i].hidden=!on;panels[i].classList.toggle('active',on);});if(focus)tabs[current].focus();}
