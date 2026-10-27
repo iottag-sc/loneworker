@@ -25,4 +25,11 @@
  tabs.forEach((tab,i)=>{tab.addEventListener('click',()=>{select(i);stopTour();startTour();track('tab_view',tab.innerText);});tab.addEventListener('keydown',e=>{let n=null;if(e.key==='ArrowRight')n=i+1;if(e.key==='ArrowLeft')n=i-1;if(e.key==='Home')n=0;if(e.key==='End')n=tabs.length-1;if(n!==null){e.preventDefault();select(n,true);stopTour();startTour();}});});
  if('IntersectionObserver' in window){new IntersectionObserver(entries=>{const visible=entries[0].isIntersecting;if(visible){startTour();}else{stopTour();}},{threshold:.32}).observe(root);}else{startTour();}
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopTour();});
+ // Personal alarm types slider: tabs and arrows switch between the three alarm slides.
+ const alarms=document.getElementById('alarm-types');
+ if(alarms){const slides=[...alarms.querySelectorAll('.al-slide')],alTabs=[...alarms.querySelectorAll('[role=tab]')],counter=alarms.querySelector('.al-counter');let shown=0;
+  const pad=n=>String(n).padStart(2,'0');
+  function show(index,focus=false){shown=(index+slides.length)%slides.length;slides.forEach((s,i)=>{const on=i===shown;s.classList.toggle('is-active',on);s.setAttribute('aria-hidden',String(!on));});alTabs.forEach((t,i)=>{const on=i===shown;t.setAttribute('aria-selected',String(on));t.tabIndex=on?0:-1;});counter.textContent=pad(shown+1)+' / '+pad(slides.length);if(focus)alTabs[shown].focus();}
+  alarms.querySelector('.al-prev').addEventListener('click',()=>show(shown-1));alarms.querySelector('.al-next').addEventListener('click',()=>show(shown+1));
+  alTabs.forEach((tab,i)=>{tab.addEventListener('click',()=>show(i));tab.addEventListener('keydown',e=>{let n=null;if(e.key==='ArrowRight')n=i+1;if(e.key==='ArrowLeft')n=i-1;if(e.key==='Home')n=0;if(e.key==='End')n=alTabs.length-1;if(n!==null){e.preventDefault();show(n,true);}});});}
 })();
