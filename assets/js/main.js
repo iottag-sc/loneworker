@@ -32,4 +32,16 @@
   function show(index,focus=false){shown=(index+slides.length)%slides.length;slides.forEach((s,i)=>{const on=i===shown;s.classList.toggle('is-active',on);s.setAttribute('aria-hidden',String(!on));});alTabs.forEach((t,i)=>{const on=i===shown;t.setAttribute('aria-selected',String(on));t.tabIndex=on?0:-1;});counter.textContent=pad(shown+1)+' / '+pad(slides.length);if(focus)alTabs[shown].focus();}
   alarms.querySelector('.al-prev').addEventListener('click',()=>show(shown-1));alarms.querySelector('.al-next').addEventListener('click',()=>show(shown+1));
   alTabs.forEach((tab,i)=>{tab.addEventListener('click',()=>show(i));tab.addEventListener('keydown',e=>{let n=null;if(e.key==='ArrowRight')n=i+1;if(e.key==='ArrowLeft')n=i-1;if(e.key==='Home')n=0;if(e.key==='End')n=alTabs.length-1;if(n!==null){e.preventDefault();show(n,true);}});});}
+ // Walkthrough request: the button opens a form that posts to the links admin; without JS it stays a mailto link.
+ const dialog=document.getElementById('enquiry'),form=document.getElementById('enquiry-form'),demo=document.getElementById('demo-email');
+ if(dialog&&form&&demo&&typeof dialog.showModal==='function'){const status=document.getElementById('enquiry-status'),done=document.getElementById('enquiry-done'),interests=document.getElementById('enquiry-interests'),send=form.querySelector('[type=submit]');
+  const ticked=()=>[...document.querySelectorAll('input[name=alarm-type]:checked')].map(i=>i.value).join(', ');
+  demo.addEventListener('click',e=>{e.preventDefault();const t=ticked();interests.hidden=!t;interests.textContent=t?'Interested in: '+t:'';status.textContent='';status.className='enquiry-status';form.hidden=false;done.hidden=true;dialog.showModal();form.elements.name.focus();});
+  dialog.addEventListener('click',e=>{if(e.target===dialog||e.target.closest('[data-close]'))dialog.close();});
+  form.addEventListener('submit',async e=>{e.preventDefault();const data=new URLSearchParams(new FormData(form));data.set('interests',ticked());if(ref)data.set('ref',ref);send.disabled=true;status.className='enquiry-status';status.textContent='Sending…';let problem='';
+   try{const r=await fetch(LINKS+'/api/enquiry',{method:'POST',body:data});if(!r.ok){const d=await r.json().catch(()=>({}));if(r.status===400&&d.detail)problem=d.detail;throw r;}
+    form.reset();form.hidden=true;done.hidden=false;done.querySelector('.btn').focus();}
+   catch{status.className='enquiry-status error';status.textContent=(problem||'Sorry, we could not send your request.')+' ';
+    if(!problem){const v=k=>form.elements[k].value.trim(),mail=document.createElement('a');mail.textContent='Email it to us instead';mail.href='mailto:info@iottag.com?subject='+encodeURIComponent('iottag Worker Safety system walkthrough')+'&body='+encodeURIComponent(['Name: '+v('name'),'Company: '+v('company'),'Role: '+v('role'),'Email: '+v('email'),'Phone: '+v('phone'),'Interested in: '+ticked()].join('\n'));status.append(mail);}}
+   send.disabled=false;});}
 })();
